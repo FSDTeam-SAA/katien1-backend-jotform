@@ -6,8 +6,17 @@ export const createForm = async (req, res, next) => {
 
     let { type, formName, fieldName = [] } = req.body;
     console.log(req.body);
-    // Ensure unique fields
-    fieldName = [...new Set(fieldName.map((f) => f.trim()))];
+    
+    // Fixed: Ensure unique field names by trimming and checking the name property
+    const uniqueFieldNames = new Set();
+    fieldName = fieldName.filter(field => {
+      const trimmedName = field.name.trim();
+      if (!uniqueFieldNames.has(trimmedName)) {
+        uniqueFieldNames.add(trimmedName);
+        return true;
+      }
+      return false;
+    });
 
     const form = new Form({
       type,
@@ -59,13 +68,25 @@ export const myForms = async (req, res) => {
 export const updateForm = async (req, res, next) => {
   try {
     const { id } = req.params;
-    let { type, formName, fieldName = [], userId } = req.body;
+    let { type, formName, fieldName = [] } = req.body;
 
-    fieldName = [...new Set(fieldName.map((f) => f.trim()))];
+    // Remove userId from request body since it should come from authenticated user
+    // Fixed: Process fieldName as objects with name and type properties
+    const uniqueFieldNames = new Set();
+    fieldName = fieldName.filter(field => {
+      if (field && field.name) {
+        const trimmedName = field.name.trim();
+        if (!uniqueFieldNames.has(trimmedName)) {
+          uniqueFieldNames.add(trimmedName);
+          return true;
+        }
+      }
+      return false;
+    });
 
     const form = await Form.findByIdAndUpdate(
       id,
-      { type, formName, fieldName, userId },
+      { type, formName, fieldName },
       { new: true, runValidators: true }
     );
 

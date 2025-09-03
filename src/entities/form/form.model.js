@@ -11,7 +11,10 @@ const formSchema = new Schema(
       required: [true, 'this field is required'],
       trim: true
     },
-    fieldName: [String],
+    fieldName: [{
+      name: { type: String, required: true },
+      type: { type: String, required: true, }
+    }],
     userId: { type: Schema.Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
